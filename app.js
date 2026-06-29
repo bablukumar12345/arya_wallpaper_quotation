@@ -29,9 +29,17 @@ function showConfirm(message, onConfirm) {
     </div>
   `;
   document.body.appendChild(overlay);
-  document.getElementById('confirm-ok-btn').onclick = () => { overlay.remove(); onConfirm(); };
-  document.getElementById('confirm-cancel-btn').onclick = () => { overlay.remove(); };
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  document.getElementById('confirm-ok-btn').onclick = () => {
+    overlay.remove();
+    onConfirm();
+  };
+  document.getElementById('confirm-cancel-btn').onclick = () => {
+    overlay.remove();
+  };
+  overlay.onclick = (e) => {
+    if (e.target === overlay) overlay.remove();
+  };
 }
 
 // ── ADD ROOM ──────────────────────────────────────────────
@@ -91,6 +99,7 @@ function addRoom(saved) {
   `;
 
   document.getElementById('rooms-wrap').appendChild(div);
+
   if (d.walls && d.walls.length) {
     d.walls.forEach(w => addWall(rid, w));
   } else {
@@ -111,8 +120,11 @@ function addWall(rid, saved) {
   div.innerHTML = `
     <div class="wall-top">
       <div class="wall-badge">Wall ${wid}</div>
-      ${wid > 1 ? `<button class="wall-del-btn" onclick="removeWall(${rid},${wid})" title="Remove wall">&times;</button>` : ''}
+      ${wid > 1
+      ? `<button class="wall-del-btn" onclick="removeWall(${rid},${wid})" title="Remove wall">&times;</button>`
+      : ''}
     </div>
+
     <div class="wall-dims">
       <div class="dim-field">
         <label>Width (inch)</label>
@@ -125,12 +137,14 @@ function addWall(rid, saved) {
           value="${d.height || ''}" oninput="calcWall(${rid},${wid})"/>
       </div>
     </div>
+
     <div class="sqft-row">
       <div class="sqft-pill" id="pill-${rid}-${wid}">
         <span class="sqft-num" id="wsqft-${rid}-${wid}">--</span>
         <span class="sqft-unit">sq ft</span>
       </div>
     </div>
+
     <div class="pattern-section">
       <div class="pattern-section-label">Pattern Number</div>
       <div class="pattern-field">
@@ -138,6 +152,7 @@ function addWall(rid, saved) {
           value="${d.patternNum || ''}" oninput="scheduleAutoSave()"/>
       </div>
     </div>
+
     <div class="rate-row">
       <label>Rate (Rs./sq ft)</label>
       <input type="number" id="rate-${rid}-${wid}" placeholder="0" min="0" step="0.01"
@@ -213,8 +228,10 @@ function updateBalance() {
   const grandTotal = parseFloat(grandTotalText.replace('Rs.', '').replace(/,/g, '').trim()) || 0;
   const advance = parseFloat(document.getElementById('advance-amount')?.value) || 0;
   const balance = grandTotal - advance;
+
   const balVal = document.getElementById('balance-val');
   const balNote = document.getElementById('balance-note');
+
   if (balVal) {
     balVal.textContent = 'Rs. ' + Math.abs(balance).toFixed(2);
     if (balance < 0) {
@@ -242,18 +259,22 @@ function recalc() {
     const rid = el.id.replace('room-', '');
     const walls = getRoomWalls(rid);
     let roomSqft = 0, roomAmt = 0;
+
     walls.forEach(w => {
       roomSqft += w.sqft;
       roomAmt += w.amt;
       const amtEl = document.getElementById(`wamt-${rid}-${w.wid}`);
       if (amtEl) amtEl.textContent = 'Rs. ' + w.amt.toFixed(2);
     });
+
     grandSqft += roomSqft;
     grandTotal += roomAmt;
+
     const rtEl = document.getElementById(`rtotal-${rid}`);
     const rsEl = document.getElementById(`rsqft-${rid}`);
     if (rtEl) rtEl.textContent = 'Rs. ' + roomAmt.toFixed(2);
     if (rsEl) rsEl.textContent = roomSqft.toFixed(3) + ' sq ft';
+
     const catEl = document.getElementById('cat-' + rid);
     summaryRows.push({ name: catEl?.value || 'Room', sqft: roomSqft, amt: roomAmt });
   });
@@ -310,27 +331,33 @@ function showBill() {
   const balanceLabel = balance < 0 ? 'Overpaid' : 'Balance Due';
 
   const rows = data.rooms.flatMap(r =>
-    r.walls.map(w => `
-      <tr>
-        <td>${r.category}</td>
-        <td>Wall ${w.wid}</td>
-        <td>${r.roomPaper}</td>
-        <td>${w.patternNum || '—'}</td>
-        <td>${w.width}</td>
-        <td>${w.height}</td>
-        <td>${w.sqft.toFixed(3)}</td>
-        <td>Rs. ${w.rate.toFixed(2)}</td>
-        <td>Rs. ${w.amt.toFixed(2)}</td>
-      </tr>`)
+    r.walls.map(w => {
+      const patternCell = w.patternNum || '—';
+      return `
+        <tr>
+          <td>${r.category}</td>
+          <td>Wall ${w.wid}</td>
+          <td>${r.roomPaper}</td>
+          <td>${patternCell}</td>
+          <td>${w.width}</td>
+          <td>${w.height}</td>
+          <td>${w.sqft.toFixed(3)}</td>
+          <td>Rs. ${w.rate.toFixed(2)}</td>
+          <td>Rs. ${w.amt.toFixed(2)}</td>
+        </tr>`;
+    })
   ).join('');
+
+  const logoHtml = `
+    <img src="/img/logo.jpeg" class="bill-logo-img" alt="Logo"
+      onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+    <span class="bill-logo-fallback" style="display:none;">W</span>`;
 
   document.getElementById('bill-content').innerHTML = `
     <div class="bill-header">
       <div class="bill-co">
         <div class="bill-logo-wrap">
-          <img src="img/logo.jpeg" class="bill-logo-img" alt="Logo"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
-          <span class="bill-logo-fallback" style="display:none;">A</span>
+          ${logoHtml}
           <div>ARYA WALLPAPER<small>Pawan Kumar</small></div>
         </div>
       </div>
@@ -345,8 +372,15 @@ function showBill() {
     <div class="bill-table-wrap">
       <table class="bill-table">
         <thead><tr>
-          <th>Room</th><th>Wall</th><th>Paper</th><th>Pattern</th>
-          <th>Width</th><th>Height</th><th>Sq Ft</th><th>Rate</th><th>Amount</th>
+          <th>Room</th>
+          <th>Wall</th>
+          <th>Paper</th>
+          <th>Pattern</th>
+          <th>Width</th>
+          <th>Height</th>
+          <th>Sq Ft</th>
+          <th>Rate</th>
+          <th>Amount</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
@@ -401,7 +435,7 @@ function printBill() {
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-  <title>ARYA WALLPAPER — Bill</title>
+  <title>Noida Decor — Bill</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -454,6 +488,7 @@ function printBill() {
 function showToast(message, type = 'success') {
   const existing = document.getElementById('toast');
   if (existing) existing.remove();
+
   const toast = document.createElement('div');
   toast.id = 'toast';
   toast.textContent = message;
@@ -468,12 +503,14 @@ function showToast(message, type = 'success') {
     pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;
   `;
   document.body.appendChild(toast);
+
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       toast.style.opacity = '1';
       toast.style.transform = 'translateX(-50%) translateY(0)';
     });
   });
+
   setTimeout(() => {
     toast.style.opacity = '0';
     toast.style.transform = 'translateX(-50%) translateY(10px)';
@@ -492,8 +529,10 @@ function scheduleAutoSave() {
 
 function autoSaveDraft() {
   const data = gatherData();
+
   const hasContent = data.name || data.phone || data.address ||
     data.rooms.some(r => r.walls.some(w => w.width || w.height || w.rate));
+
   if (!hasContent) return;
 
   let grandTotal = 0;
@@ -502,12 +541,21 @@ function autoSaveDraft() {
   data.savedAt = new Date().toISOString();
 
   let h = JSON.parse(localStorage.getItem('wq2_history') || '[]');
+
   if (currentDraftId) {
     const idx = h.findIndex(x => x.id === currentDraftId);
-    if (idx !== -1) { data.id = currentDraftId; h[idx] = data; }
-    else { data.id = Date.now(); currentDraftId = data.id; h.unshift(data); }
+    if (idx !== -1) {
+      data.id = currentDraftId;
+      h[idx] = data;
+    } else {
+      data.id = Date.now();
+      currentDraftId = data.id;
+      h.unshift(data);
+    }
   } else {
-    data.id = Date.now(); currentDraftId = data.id; h.unshift(data);
+    data.id = Date.now();
+    currentDraftId = data.id;
+    h.unshift(data);
   }
 
   localStorage.setItem('wq2_history', JSON.stringify(h.slice(0, 20)));
@@ -518,21 +566,30 @@ function autoSaveDraft() {
 function restoreDraftIfAny() {
   const id = localStorage.getItem('wq2_current_draft');
   if (!id) return false;
+
   const h = JSON.parse(localStorage.getItem('wq2_history') || '[]');
   const q = h.find(x => x.id === parseInt(id));
   if (!q) return false;
+
   currentDraftId = q.id;
   clearAll(true);
+
   document.getElementById('cust-name').value = q.name || '';
   document.getElementById('cust-phone').value = q.phone || '';
   document.getElementById('cust-address').value = q.address || '';
   document.getElementById('advance-amount').value = q.advance || '';
-  if (q.rooms && q.rooms.length) { q.rooms.forEach(r => addRoom(r)); } else { addRoom(); }
+
+  if (q.rooms && q.rooms.length) {
+    q.rooms.forEach(r => addRoom(r));
+  } else {
+    addRoom();
+  }
+
   updateBalance();
   return true;
 }
 
-// ── SAVE QUOTE ────────────────────────────────────────────
+// ── SAVE QUOTE (manual button) ────────────────────────────
 function saveQuote() {
   clearTimeout(autoSaveTimer);
   autoSaveDraft();
@@ -564,8 +621,10 @@ function loadQuote(id) {
   const h = JSON.parse(localStorage.getItem('wq2_history') || '[]');
   const q = h.find(x => x.id === id);
   if (!q) return;
+
   currentDraftId = q.id;
   localStorage.setItem('wq2_current_draft', String(q.id));
+
   clearAll(true);
   document.getElementById('cust-name').value = q.name || '';
   document.getElementById('cust-phone').value = q.phone || '';
@@ -575,17 +634,24 @@ function loadQuote(id) {
   updateBalance();
 }
 
+// ── DELETE — apna custom confirmation dialog ──────────────
 function deleteQuote(id) {
   const h = JSON.parse(localStorage.getItem('wq2_history') || '[]');
   const q = h.find(x => x.id === id);
   const name = q ? (q.name || 'Unnamed Quote') : 'this quote';
+
   showConfirm(
     `<b>"${name}"</b> ko delete karna chahte hain?<br><span style="font-size:12px;color:#9ca3af;">Yeh quote hamesha ke liye mit jayega.</span>`,
     () => {
       let updated = JSON.parse(localStorage.getItem('wq2_history') || '[]');
       updated = updated.filter(x => x.id !== id);
       localStorage.setItem('wq2_history', JSON.stringify(updated));
-      if (currentDraftId === id) { currentDraftId = null; localStorage.removeItem('wq2_current_draft'); }
+
+      if (currentDraftId === id) {
+        currentDraftId = null;
+        localStorage.removeItem('wq2_current_draft');
+      }
+
       renderHistory();
       showToast('Quote delete ho gaya');
     }
@@ -607,15 +673,19 @@ function clearAll(silent) {
   recalc();
 }
 
+// ════════════════════════════════════════════════════════════
 // ── SHARE FEATURE ─────────────────────────────────────────
+// ════════════════════════════════════════════════════════════
+
 function getBillSummaryText() {
   const data = gatherData();
   let grandSqft = 0, grandTotal = 0;
   data.rooms.forEach(r => { grandSqft += r.roomSqft; grandTotal += r.roomAmt; });
   const advance = data.advance || 0;
   const balance = grandTotal - advance;
+
   let lines = [];
-  lines.push('*ARYA WALLPAPER — Quotation*');
+  lines.push('*Noida Decor — Quotation*');
   lines.push('Date: ' + data.date);
   if (data.name) lines.push('Customer: ' + data.name);
   if (data.phone) lines.push('Phone: ' + data.phone);
@@ -636,8 +706,15 @@ function getBillSummaryText() {
 
 function generateBillImageBlob() {
   const billEl = document.getElementById('bill-content');
-  return html2canvas(billEl, { scale: 2, backgroundColor: '#ffffff', useCORS: true })
-    .then(canvas => new Promise(resolve => canvas.toBlob(blob => resolve(blob), 'image/png')));
+  return html2canvas(billEl, {
+    scale: 2,
+    backgroundColor: '#ffffff',
+    useCORS: true
+  }).then(canvas => {
+    return new Promise(resolve => {
+      canvas.toBlob(blob => resolve(blob), 'image/png');
+    });
+  });
 }
 
 async function shareBill() {
@@ -645,12 +722,23 @@ async function shareBill() {
   const fallbackMenu = document.getElementById('share-fallback-menu');
   const data = gatherData();
   const fileName = 'Quotation-' + (data.name || 'Customer').replace(/\s+/g, '_') + '.png';
-  if (shareBtn) { shareBtn.disabled = true; shareBtn.dataset.originalText = shareBtn.textContent; shareBtn.textContent = 'Preparing...'; }
+
+  if (shareBtn) {
+    shareBtn.disabled = true;
+    shareBtn.dataset.originalText = shareBtn.textContent;
+    shareBtn.textContent = 'Preparing...';
+  }
+
   try {
     const blob = await generateBillImageBlob();
     const file = new File([blob], fileName, { type: 'image/png' });
+
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Wallpaper Quotation', text: getBillSummaryText() });
+      await navigator.share({
+        files: [file],
+        title: 'Wallpaper Quotation',
+        text: getBillSummaryText()
+      });
     } else {
       window._lastBillBlob = blob;
       window._lastBillFileName = fileName;
@@ -661,16 +749,25 @@ async function shareBill() {
     console.error(err);
     showToast('Kuch gadbad hui, dobara try karein', 'error');
   } finally {
-    if (shareBtn) { shareBtn.textContent = shareBtn.dataset.originalText || 'Share'; shareBtn.disabled = false; }
+    if (shareBtn) {
+      shareBtn.textContent = shareBtn.dataset.originalText || 'Share';
+      shareBtn.disabled = false;
+    }
   }
 }
 
 function downloadBillImage() {
-  if (!window._lastBillBlob) { showToast('Pehle Share button dabayen', 'error'); return; }
+  if (!window._lastBillBlob) {
+    showToast('Pehle Share button dabayen', 'error');
+    return;
+  }
   const url = URL.createObjectURL(window._lastBillBlob);
   const a = document.createElement('a');
-  a.href = url; a.download = window._lastBillFileName || 'quotation.png';
-  document.body.appendChild(a); a.click(); a.remove();
+  a.href = url;
+  a.download = window._lastBillFileName || 'quotation.png';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
   URL.revokeObjectURL(url);
   showToast('Image download ho gayi!');
 }
@@ -699,5 +796,7 @@ document.getElementById('today-date').textContent = new Date().toLocaleDateStrin
 });
 
 const restored = restoreDraftIfAny();
-if (!restored) { addRoom(); }
+if (!restored) {
+  addRoom();
+}
 renderHistory();
