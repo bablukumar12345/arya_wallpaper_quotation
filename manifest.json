@@ -1,0 +1,22 @@
+{
+  "name": "Arya Wallpaper",
+  "short_name": "Arya Wallpaper",
+  "description": "Wallpaper Quotation App",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f5f9",
+  "theme_color": "#0b1e3d",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/img/logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/img/logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}

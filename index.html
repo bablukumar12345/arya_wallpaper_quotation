@@ -5,6 +5,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Wallpaper Quotation</title>
+
+    <!-- PWA Setup -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0b1e3d" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Noida Decor" />
+    <link rel="apple-touch-icon" href="/img/logo.jpeg" />
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="style.css" />
 </head>
@@ -14,14 +23,13 @@
     <header>
         <div class="brand">
             <div class="brand-logo" id="header-logo-wrap">
-                <img src="/img/logo.png" id="header-logo-img" alt="Logo"
+                <img src="/img/logo.jpeg" id="header-logo-img" alt="Logo"
                     onerror="this.style.display='none';document.getElementById('header-logo-fallback').style.display='flex'" />
                 <span id="header-logo-fallback"
                     style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:18px;font-weight:700;">W</span>
             </div>
             <div>
-                <div class="brand-name">ARYA WALLPAPER</div>
-                <!-- <div class="brand-sub">Professional Quotation</div> -->
+                <div class="brand-name">Arya Wallpaper</div>
             </div>
         </div>
         <div class="header-date" id="today-date"></div>
@@ -35,15 +43,15 @@
             <div class="cust-grid">
                 <div class="field-wrap">
                     <label>Customer Name</label>
-                    <input type="text" id="cust-name" placeholder="Full name" />
+                    <input type="text" id="cust-name" placeholder="Full name" oninput="scheduleAutoSave()" />
                 </div>
                 <div class="field-wrap">
                     <label>Phone Number</label>
-                    <input type="text" id="cust-phone" placeholder="+91 00000 00000" />
+                    <input type="text" id="cust-phone" placeholder="+91 00000 00000" oninput="scheduleAutoSave()" />
                 </div>
                 <div class="field-wrap">
                     <label>Address</label>
-                    <input type="text" id="cust-address" placeholder="House no, Street, City" />
+                    <input type="text" id="cust-address" placeholder="House no, Street, City" oninput="scheduleAutoSave()" />
                 </div>
             </div>
         </div>
@@ -73,7 +81,7 @@
                 <div class="advance-field-row">
                     <label>Advance Paid</label>
                     <input type="number" id="advance-amount" placeholder="0.00" min="0" step="0.01"
-                        oninput="updateBalance()" />
+                        oninput="updateBalance();scheduleAutoSave()" />
                 </div>
                 <div class="balance-row">
                     <div>
@@ -108,14 +116,35 @@
     <div id="bill-modal">
         <div class="modal-bg" onclick="closeBill()"></div>
         <div class="modal-box">
-            <button class="modal-close" onclick="closeBill()">&times;</button>
+            <button class="modal-close" onclick="closeBill()" type="button">&times;</button>
             <div id="bill-content"></div>
-            <button class="btn btn-primary" style="width:100%;margin-top:16px;" onclick="printBill()">Download /
-                Print</button>
+
+            <div class="bill-action-row">
+                <button class="btn btn-outline" type="button" onclick="printBill()">Download / Print</button>
+                <button class="btn btn-primary" type="button" id="share-btn" onclick="shareBill()">Share</button>
+            </div>
+
+            <div id="share-fallback-menu" class="share-menu">
+                <div class="share-option" onclick="shareWhatsApp()">📱 WhatsApp se Share</div>
+                <div class="share-option" onclick="shareEmail()">✉️ Email se Share</div>
+                <div class="share-option" onclick="downloadBillImage()">⬇️ Image Download Karein</div>
+            </div>
         </div>
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="app.js"></script>
-</body>
 
+    <!-- Service Worker Register -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(() => console.log('SW registered'))
+            .catch(e => console.log('SW error', e));
+        });
+      }
+    </script>
+
+</body>
 </html>
